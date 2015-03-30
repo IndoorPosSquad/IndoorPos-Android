@@ -38,7 +38,7 @@ public class DeviceMan {
         log(conn.claimInterface(intf, true));
     }
 
-    public void read() {
+    public float[] read() {
         final int len = 64;
 
         byte[] content = new byte[len];
@@ -54,5 +54,7 @@ public class DeviceMan {
             System.out.println();
         }
         log("------------------------");
+
+        return new float[]{12.041595f, 2.23608f, 8.062258f};
     }
 }

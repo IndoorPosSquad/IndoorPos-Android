@@ -1,9 +1,9 @@
 package com.vetrm.indoorpos;
 
-import android.content.Intent;
 import android.opengl.GLSurfaceView;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -23,6 +23,7 @@ import com.threed.jpct.util.BitmapHelper;
 import com.threed.jpct.util.MemoryHelper;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
@@ -32,6 +33,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class Visualization extends ActionBarActivity {
     private static App app;
+    private static DeviceMan devman;
 
     private static Visualization master = null;
 
@@ -53,7 +55,6 @@ public class Visualization extends ActionBarActivity {
 
     private Light sun = null;
 
-    private DeviceMan devman;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -90,6 +91,7 @@ public class Visualization extends ActionBarActivity {
         mGLView = new GLSurfaceView(getApplication());
 
         app = App.getInstance();
+        devman = app.getDevman();
 
         if (gl2) {
             mGLView.setEGLContextClientVersion(2);
@@ -145,12 +147,15 @@ public class Visualization extends ActionBarActivity {
         }
     }
 
+    private void log(Object obj) {
+        Log.d("Visual", "" + obj);
+    }
+
     public boolean onTouchEvent(MotionEvent me) {
 
         if (me.getAction() == MotionEvent.ACTION_DOWN) {
             xpos = me.getX();
             ypos = me.getY();
-            cube.translate(0.1f, 0.1f, 0.2f);
             return true;
         }
 
@@ -159,7 +164,6 @@ public class Visualization extends ActionBarActivity {
             ypos = -1;
             touchTurn = 0;
             touchTurnUp = 0;
-            cube.translate(0.0f, 0.0f, 0.0f);
             return true;
         }
 
@@ -190,7 +194,8 @@ public class Visualization extends ActionBarActivity {
 
     class MyRenderer implements GLSurfaceView.Renderer {
 
-        private long time = System.currentTimeMillis();
+        private long logTimer = System.currentTimeMillis();
+        private long updateTimer = System.currentTimeMillis();
 
         public MyRenderer() {
         }
@@ -218,7 +223,7 @@ public class Visualization extends ActionBarActivity {
                 Texture texture = new Texture(BitmapHelper.rescale(BitmapHelper.convert(getResources().getDrawable(R.drawable.icon)), 64, 64));
                 TextureManager.getInstance().addTexture("texture", texture);
 
-                cube = Primitives.getCube(4);
+                cube = Primitives.getCube(2);
                 cube.calcTextureWrapSpherical();
                 cube.setTexture("texture");
                 cube.strip();
@@ -248,30 +253,45 @@ public class Visualization extends ActionBarActivity {
         }
 
         public void onDrawFrame(GL10 gl) {
-            if (touchTurn != 0) {
-                cube.rotateY(touchTurn);
-                touchTurn = 0;
-            }
-
-            if (touchTurnUp != 0) {
-                cube.rotateX(touchTurnUp);
-                touchTurnUp = 0;
-            }
+            cube.rotateY(0.01f);
+            cube.rotateX(0.01f);
 
             fb.clear(back);
             world.renderScene(fb);
             world.draw(fb);
             fb.display();
 
-            if (System.currentTimeMillis() - time >= 10000) {
+            if (System.currentTimeMillis() - logTimer >= 10000) {
+                logTimer = System.currentTimeMillis();
+                // Log
                 Logger.log(fps / 10 + "fps");
                 fps = 0;
-                time = System.currentTimeMillis();
                 Logger.log(cube.getTranslation().toString());
-
-                app.getDevman().read();
             }
             fps++;
+
+            if (System.currentTimeMillis() - updateTimer >= 500) {
+                updateTimer = System.currentTimeMillis();
+                float[] res =  Compute.solve3d(devman.read());
+                log(Arrays.toString(res));
+                SimpleVector cubePos = cube.getTranslation();
+                SimpleVector zero = new SimpleVector(0f, 0f, 0f);
+                zero.sub(cubePos);
+                cube.translate(zero);
+                cube.translate(new SimpleVector(res[0], res[1], res[2]));
+                // cube.
+            }
         }
     }
 }
+/*
+if (touchTurn != 0) {
+        cube.rotateY(touchTurn);
+        touchTurn = 0;
+        }
+
+        if (touchTurnUp != 0) {
+        cube.rotateX(touchTurnUp);
+        touchTurnUp = 0;
+        }
+        */
