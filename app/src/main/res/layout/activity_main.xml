@@ -14,21 +14,14 @@
         android:onClick="showGraphics"
         />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="New Text"
-        android:id="@+id/textView"
-        android:layout_gravity="center_horizontal|top" />
-
     <Button
         style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="List USB"
+        android:text="read"
         android:id="@+id/button2"
         android:layout_gravity="center"
-        android:onClick="listUSB"
+        android:onClick="read"
         />
 
 </FrameLayout>
