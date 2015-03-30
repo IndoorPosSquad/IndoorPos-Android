@@ -1,5 +1,6 @@
 package com.vetrm.indoorpos;
 
+import android.content.Intent;
 import android.opengl.GLSurfaceView;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -30,7 +31,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 
 public class Visualization extends ActionBarActivity {
-
+    private static App app;
 
     private static Visualization master = null;
 
@@ -51,6 +52,8 @@ public class Visualization extends ActionBarActivity {
     private boolean gl2 = true;
 
     private Light sun = null;
+
+    private DeviceMan devman;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -85,6 +88,8 @@ public class Visualization extends ActionBarActivity {
 
         super.onCreate(savedInstanceState);
         mGLView = new GLSurfaceView(getApplication());
+
+        app = App.getInstance();
 
         if (gl2) {
             mGLView.setEGLContextClientVersion(2);
@@ -263,6 +268,8 @@ public class Visualization extends ActionBarActivity {
                 fps = 0;
                 time = System.currentTimeMillis();
                 Logger.log(cube.getTranslation().toString());
+
+                app.getDevman().read();
             }
             fps++;
         }
