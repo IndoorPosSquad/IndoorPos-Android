@@ -20,9 +20,13 @@ public class Main extends ActionBarActivity {
 
         app = App.getInstance();
 
-        UsbDevice device = getIntent().getParcelableExtra(UsbManager.EXTRA_DEVICE);
-        UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
-        app.setDevman(new DeviceMan(device, manager));
+        if (false) {
+            UsbDevice device = getIntent().getParcelableExtra(UsbManager.EXTRA_DEVICE);
+            UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
+            app.setDevman(new DeviceMan(device, manager));
+        } else {
+            app.setDevman(new DeviceMan());
+        }
     }
 
 

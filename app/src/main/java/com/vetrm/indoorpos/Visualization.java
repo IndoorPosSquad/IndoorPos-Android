@@ -50,10 +50,20 @@ public class Visualization extends ActionBarActivity {
     private float ypos = -1;
 
     private Object3D cube = null;
+    private Object3D ground = null;
     private int fps = 0;
     private boolean gl2 = true;
 
     private Light sun = null;
+
+    private Camera cam;
+    private OrbitControls controls;
+
+    private XYZ[] PL_XYZ = new XYZ[]{
+            new XYZ(5.0f, 5.0f, 8.000000f),
+            new XYZ(-5.0f, -5.0f, 8.000000f),
+            new XYZ(-5.0f, 5.0f, 8.000000f)
+    };
 
 
     @Override
@@ -188,6 +198,7 @@ public class Visualization extends ActionBarActivity {
         return super.onTouchEvent(me);
     }
 
+
     protected boolean isFullscreenOpaque() {
         return true;
     }
@@ -198,6 +209,12 @@ public class Visualization extends ActionBarActivity {
         private long updateTimer = System.currentTimeMillis();
 
         public MyRenderer() {
+        }
+
+        public SimpleVector transfer(float x, float y, float z) {
+            final float factor = 1.2f;
+            final XYZ move = new XYZ(0f, 0f, 0f);
+            return new SimpleVector(factor * y + move.y, factor * -z - move.z, factor * -x - move.x);
         }
 
         public void onSurfaceChanged(GL10 gl, int w, int h) {
@@ -222,18 +239,40 @@ public class Visualization extends ActionBarActivity {
                 // Create a texture out of the icon...:-)
                 Texture texture = new Texture(BitmapHelper.rescale(BitmapHelper.convert(getResources().getDrawable(R.drawable.icon)), 64, 64));
                 TextureManager.getInstance().addTexture("texture", texture);
+                // grass gound
+                Texture grassGround = new Texture(BitmapHelper.rescale(BitmapHelper.convert(getResources().getDrawable(R.mipmap.grass_ground)), 1024, 1024));
+                TextureManager.getInstance().addTexture("grass ground", grassGround);
 
-                cube = Primitives.getCube(2);
+                cube = Primitives.getSphere(1);
                 cube.calcTextureWrapSpherical();
-                cube.setTexture("texture");
+                cube.setTexture("grass ground");
                 cube.strip();
                 cube.build();
 
-                world.addObject(cube);
+                ground = Primitives.getPlane(30, 1);
+                ground.calcTextureWrapSpherical();
+                ground.strip();
+                ground.build();
+                ground.translate(0, 0, 0);
+                ground.rotateX((float) Math.PI / 2f);
 
-                Camera cam = world.getCamera();
-                cam.moveCamera(Camera.CAMERA_MOVEOUT, 50);
+                world.addObject(cube);
+                world.addObject(ground);
+
+                for (int i = 0; i < PL_XYZ.length; i++) {
+                    Object3D pl = Primitives.getDoubleCone(0.5f);
+                    pl.calcTextureWrapSpherical();
+                    pl.strip();
+                    pl.build();
+                    pl.translate(transfer(PL_XYZ[i].x, PL_XYZ[i].y, PL_XYZ[i].z));
+                    world.addObject(pl);
+                }
+
+                cam = world.getCamera();
+                cam.setPosition(0.0f, -15.0f, -30.0f);
                 cam.lookAt(cube.getTransformedCenter());
+
+                controls = new OrbitControls(cam);
 
                 SimpleVector sv = new SimpleVector();
                 sv.set(cube.getTransformedCenter());
@@ -256,6 +295,16 @@ public class Visualization extends ActionBarActivity {
             cube.rotateY(0.01f);
             cube.rotateX(0.01f);
 
+            if (touchTurn != 0) {
+                controls.spinY(touchTurn / 10);
+                touchTurn = 0;
+            }
+
+            if (touchTurnUp != 0) {
+                controls.spinX(touchTurnUp / 10);
+                touchTurnUp = 0;
+            }
+
             fb.clear(back);
             world.renderScene(fb);
             world.draw(fb);
@@ -272,14 +321,25 @@ public class Visualization extends ActionBarActivity {
 
             if (System.currentTimeMillis() - updateTimer >= 500) {
                 updateTimer = System.currentTimeMillis();
-                float[] res =  Compute.solve3d(devman.read());
-                log(Arrays.toString(res));
-                SimpleVector cubePos = cube.getTranslation();
-                SimpleVector zero = new SimpleVector(0f, 0f, 0f);
-                zero.sub(cubePos);
-                cube.translate(zero);
-                cube.translate(new SimpleVector(res[0], res[1], res[2]));
-                // cube.
+                float[] ranges = devman.readDists();
+                XYZ res =  Compute.Solve3d(PL_XYZ, ranges);
+                log(res.toString());
+
+                if (!Float.isNaN(res.x) && !Float.isNaN(res.y) && !Float.isNaN(res.y)) {
+                    SimpleVector cubePos = cube.getTranslation();
+                    SimpleVector toZero = new SimpleVector(0f, 0f, 0f);
+                    toZero.sub(cubePos);
+
+                    cube.translate(toZero);
+                    cube.translate(transfer(res.x, res.y, res.z));
+                    // cube.
+                } else {
+                    log("Error in solving: " + Arrays.toString(ranges));
+                }
+                //log(cam.getPosition());
+                //log(cam.getXAxis());
+                //log(cam.getYAxis());
+                //log(cam.getZAxis());
             }
         }
     }
@@ -295,3 +355,25 @@ if (touchTurn != 0) {
         touchTurnUp = 0;
         }
         */
+
+class OrbitControls {
+    private Camera camera;
+
+    OrbitControls(Camera cam) {
+        camera = cam;
+    }
+
+    public void spinY(float deg) {
+        SimpleVector position = camera.getPosition();
+        position.rotateY(deg);
+        camera.setPosition(position);
+        camera.lookAt(new SimpleVector(0f, 0f, 0f));
+    }
+
+    public void spinX(float deg) {
+        SimpleVector position = camera.getPosition();
+        position.rotateX(deg);
+        camera.setPosition(position);
+        camera.lookAt(new SimpleVector(0f, 0f, 0f));
+    }
+}
