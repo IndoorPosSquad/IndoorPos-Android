@@ -21,6 +21,7 @@ public class DeviceMan {
     private UsbEndpoint ep;
 
     private boolean DEBUG_GRAPHIC;
+    private App app;
 
     private void log(Object obj) {
         final String DBG_TAG = "DeviceMan";
@@ -29,10 +30,14 @@ public class DeviceMan {
 
     public DeviceMan() {
         DEBUG_GRAPHIC = true;
+
+        app = App.getInstance();
     }
 
     public DeviceMan(UsbDevice dev, UsbManager man) {
         DEBUG_GRAPHIC = false;
+
+        app = App.getInstance();
 
         device = dev;
         manager = man;
@@ -83,6 +88,12 @@ public class DeviceMan {
             }
             result[i] = byteArrayToInt(aNum) / 100f;
         }
+
+
+        result[0] -= app.getDistOffset(1);
+        result[1] -= app.getDistOffset(2);
+        result[2] -= app.getDistOffset(3);
+        //[117.37, 124.98, 89.94]
 
         log(Arrays.toString(result));
         return result;

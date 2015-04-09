@@ -1,5 +1,9 @@
 package com.vetrm.indoorpos;
 
+import android.util.Log;
+
+import java.util.Arrays;
+
 /**
  * Created by simpleon on 27/3/15.
  */
@@ -252,7 +256,12 @@ public class Compute {
         float[] res = new float[3];
         res[0] = X;
         res[1] = Y;
-        res[2] = -h;
+
+        if (App.getInstance().isDown()) {
+            res[2] = -h;
+        } else {
+            res[2] = h;
+        }
 
         // 分两步将结果变换回原坐标系
         float[] target_xyz = new float[3];
@@ -277,8 +286,11 @@ public class Compute {
         result.y = ans[1] + pl_xyz[0].y;
         result.z = ans[2] + pl_xyz[0].z;
 
-
         return result;
+    }
+
+    private static void log(Object obj) {
+        Log.d("Compute", "" + obj);
     }
 
 }

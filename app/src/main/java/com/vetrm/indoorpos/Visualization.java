@@ -59,11 +59,13 @@ public class Visualization extends ActionBarActivity {
     private Camera cam;
     private OrbitControls controls;
 
-    private XYZ[] PL_XYZ = new XYZ[]{
-            new XYZ(5.0f, 5.0f, 8.000000f),
-            new XYZ(-5.0f, -5.0f, 8.000000f),
-            new XYZ(-5.0f, 5.0f, 8.000000f)
+    private XYZ[] currentPos = new XYZ[]{
+            new XYZ(0f, 4.8f, 3.000000f),
+            new XYZ(0f, 0f, 3.000000f),
+            new XYZ(4.8f, 0f, 3.000000f)
     };
+
+    private Object3D[] anchors = new Object3D[3];
 
 
     @Override
@@ -212,9 +214,9 @@ public class Visualization extends ActionBarActivity {
         }
 
         public SimpleVector transfer(float x, float y, float z) {
-            final float factor = 1.2f;
-            final XYZ move = new XYZ(0f, 0f, 0f);
-            return new SimpleVector(factor * y + move.y, factor * -z - move.z, factor * -x - move.x);
+            final float factor = app.getDisplayFactor();
+            final XYZ offset = app.getDisplayOffset();
+            return new SimpleVector(factor * y + offset.y, factor * -z - offset.z, factor * -x - offset.x);
         }
 
         public void onSurfaceChanged(GL10 gl, int w, int h) {
@@ -259,17 +261,20 @@ public class Visualization extends ActionBarActivity {
                 world.addObject(cube);
                 world.addObject(ground);
 
-                for (int i = 0; i < PL_XYZ.length; i++) {
+                currentPos = app.getANCHOR_XYZ();
+
+                for (int i = 0; i < currentPos.length; i++) {
                     Object3D pl = Primitives.getDoubleCone(0.5f);
+                    anchors[i] = pl;
                     pl.calcTextureWrapSpherical();
                     pl.strip();
                     pl.build();
-                    pl.translate(transfer(PL_XYZ[i].x, PL_XYZ[i].y, PL_XYZ[i].z));
+                    pl.translate(transfer(currentPos[i].x, currentPos[i].y, currentPos[i].z));
                     world.addObject(pl);
                 }
 
                 cam = world.getCamera();
-                cam.setPosition(0.0f, -15.0f, -30.0f);
+                cam.setPosition(-30.0f, -15.0f, 0.0f);
                 cam.lookAt(cube.getTransformedCenter());
 
                 controls = new OrbitControls(cam);
@@ -301,7 +306,7 @@ public class Visualization extends ActionBarActivity {
             }
 
             if (touchTurnUp != 0) {
-                controls.spinX(touchTurnUp / 10);
+                controls.spinZ(-touchTurnUp / 10);
                 touchTurnUp = 0;
             }
 
@@ -322,7 +327,7 @@ public class Visualization extends ActionBarActivity {
             if (System.currentTimeMillis() - updateTimer >= 500) {
                 updateTimer = System.currentTimeMillis();
                 float[] ranges = devman.readDists();
-                XYZ res =  Compute.Solve3d(PL_XYZ, ranges);
+                XYZ res =  Compute.Solve3d(app.getANCHOR_XYZ(), ranges);
                 log(res.toString());
 
                 if (!Float.isNaN(res.x) && !Float.isNaN(res.y) && !Float.isNaN(res.y)) {
@@ -335,6 +340,15 @@ public class Visualization extends ActionBarActivity {
                     // cube.
                 } else {
                     log("Error in solving: " + Arrays.toString(ranges));
+                }
+
+                currentPos = app.getANCHOR_XYZ();
+                for (int i = 0; i < currentPos.length; i++) {
+                    SimpleVector pos = anchors[i].getTranslation();
+                    SimpleVector toZero = new SimpleVector(0f, 0f, 0f);
+                    toZero.sub(pos);
+                    anchors[i].translate(toZero);
+                    anchors[i].translate(transfer(currentPos[i].x, currentPos[i].y, currentPos[i].z));
                 }
                 //log(cam.getPosition());
                 //log(cam.getXAxis());
@@ -373,6 +387,13 @@ class OrbitControls {
     public void spinX(float deg) {
         SimpleVector position = camera.getPosition();
         position.rotateX(deg);
+        camera.setPosition(position);
+        camera.lookAt(new SimpleVector(0f, 0f, 0f));
+    }
+
+    public void spinZ(float deg) {
+        SimpleVector position = camera.getPosition();
+        position.rotateZ(deg);
         camera.setPosition(position);
         camera.lookAt(new SimpleVector(0f, 0f, 0f));
     }

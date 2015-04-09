@@ -59,7 +59,13 @@ public class Main extends ActionBarActivity {
     }
 
     public void read(View view) {
-        app.getDevman().read();
+        app.getDevman().readDists();
+    }
+
+    public void showSettings(View view) {
+        Intent intent = new Intent(this, Settings.class);
+
+        startActivity(intent);
     }
 
     @Override
