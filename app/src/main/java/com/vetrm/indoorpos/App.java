@@ -1,6 +1,7 @@
 package com.vetrm.indoorpos;
 
 import android.app.Application;
+import android.content.SharedPreferences;
 import android.hardware.usb.UsbDevice;
 import android.util.Log;
 
@@ -14,6 +15,7 @@ public class App extends Application {
 
     private static DeviceMan devman;
 
+    static String pref_file_name = "pref";
 
     private static float displayFactor = 1.5f;
 
@@ -104,6 +106,15 @@ public class App extends Application {
 
     public static void setDownup(boolean downup) {
         App.downup = downup;
+    }
+    public void saveDistOffset() {
+        SharedPreferences.Editor editor = getSharedPreferences(pref_file_name, 0).edit();
+
+        editor.putFloat("range1_offset", getDistOffset(1));
+        editor.putFloat("range2_offset", getDistOffset(2));
+        editor.putFloat("range3_offset", getDistOffset(3));
+
+        editor.commit();
     }
 
     public void onCreate() {

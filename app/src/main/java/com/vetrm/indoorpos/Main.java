@@ -9,9 +9,13 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+
 
 public class Main extends ActionBarActivity {
     private App app;
+    private TwoDimView twoDimView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,13 +24,20 @@ public class Main extends ActionBarActivity {
 
         app = App.getInstance();
 
-        if (false) {
+        if (true) {
             UsbDevice device = getIntent().getParcelableExtra(UsbManager.EXTRA_DEVICE);
             UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
             app.setDevman(new DeviceMan(device, manager));
         } else {
             app.setDevman(new DeviceMan());
         }
+
+//        requestWindowFeature(Window.FEATURE_NO_TITLE);
+//        // making it full screen
+//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+//        // set our MainGamePanel as the View
+//        setContentView(new MainGamePanel(this));
+
     }
 
 
@@ -46,6 +57,8 @@ public class Main extends ActionBarActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Intent intent = new Intent(this, Settings.class);
+            startActivity(intent);
             return true;
         }
 
@@ -64,11 +77,12 @@ public class Main extends ActionBarActivity {
 
     public void showSettings(View view) {
         Intent intent = new Intent(this, Settings.class);
-
         startActivity(intent);
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
     }
+
+
 }

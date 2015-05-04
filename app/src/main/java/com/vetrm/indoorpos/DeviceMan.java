@@ -57,7 +57,7 @@ public class DeviceMan {
 
         log("------------------------");
         for (int i = 0; i < 5; i++) {
-            System.out.println(conn.bulkTransfer(ep, content, content.length, 20));
+            System.out.println(conn.bulkTransfer(ep, content, content.length, 0));
 
             for (int j = 0; j < 12; j++) {
                 System.out.print(content[j]);
@@ -77,8 +77,8 @@ public class DeviceMan {
         final int len = 64;
         byte[] distInfo = new byte[len];
 
-        log("BulkRead Status: " + conn.bulkTransfer(ep, distInfo, distInfo.length, 20));
-        //log(Arrays.toString(distInfo));
+        log("BulkRead Status: " + conn.bulkTransfer(ep, distInfo, distInfo.length, 0));
+        log(Arrays.toString(distInfo));
 
         float[] result = new float[3];
         for (int i = 0; i < 3; i++) {

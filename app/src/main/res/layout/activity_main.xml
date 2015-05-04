@@ -41,7 +41,7 @@
     <Button
         android:layout_width="117dp"
         android:layout_height="84dp"
-        android:text="Visualize"
+        android:text="View 3D"
         android:id="@+id/button"
         android:layout_gravity="center_horizontal|bottom"
         android:onClick="showVisualization"
@@ -51,7 +51,7 @@
         style="?android:attr/buttonStyleSmall"
         android:layout_width="95dp"
         android:layout_height="wrap_content"
-        android:text="read"
+        android:text="About"
         android:id="@+id/button2"
         android:layout_gravity="right|bottom"
         android:onClick="read"
@@ -65,5 +65,12 @@
         android:layout_gravity="left|bottom"
         android:onClick="showSettings"
         />
+
+    <!--<SurfaceView-->
+    <!--<com.vetrm.indoorpos.MainGamePanel-->
+        <!--android:layout_width="fill_parent"-->
+        <!--android:layout_height="fill_parent"-->
+        <!--android:id="@+id/twodimview"-->
+        <!--android:layout_gravity="center_horizontal|top" />-->
 
 </FrameLayout>

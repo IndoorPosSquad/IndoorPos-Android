@@ -306,6 +306,12 @@ class XYZ {
         z = 0.0f;
     }
 
+    public XYZ(int x, int y, int z) {
+        this.x = (float)x;
+        this.y = (float)y;
+        this.z = (float)z;
+    }
+
     public XYZ(float x, float y, float z) {
         this.x = x;
         this.y = y;
