@@ -20,7 +20,7 @@ tools:context="com.vetrm.indoorpos.Settings$PlaceholderFragment">
 <EditText
     android:layout_width="100dp"
     android:layout_height="wrap_content"
-    android:inputType="number"
+    android:inputType="number|numberSigned"
     android:ems="10"
     android:id="@+id/a3x"
     android:layout_alignParentTop="true"
@@ -30,7 +30,7 @@ tools:context="com.vetrm.indoorpos.Settings$PlaceholderFragment">
 <EditText
     android:layout_width="100dp"
     android:layout_height="wrap_content"
-    android:inputType="number"
+    android:inputType="number|numberSigned"
     android:ems="10"
     android:id="@+id/a1x"
     android:layout_alignParentTop="true"
@@ -40,7 +40,7 @@ tools:context="com.vetrm.indoorpos.Settings$PlaceholderFragment">
 <EditText
     android:layout_width="100dp"
     android:layout_height="wrap_content"
-    android:inputType="number"
+    android:inputType="number|numberSigned"
     android:ems="10"
     android:id="@+id/a2x"
     android:layout_alignParentTop="true"
@@ -49,7 +49,7 @@ tools:context="com.vetrm.indoorpos.Settings$PlaceholderFragment">
 <EditText
     android:layout_width="100dp"
     android:layout_height="wrap_content"
-    android:inputType="number"
+    android:inputType="number|numberSigned"
     android:ems="10"
     android:id="@+id/a1y"
     android:layout_below="@+id/a1x"
@@ -59,7 +59,7 @@ tools:context="com.vetrm.indoorpos.Settings$PlaceholderFragment">
 <EditText
     android:layout_width="100dp"
     android:layout_height="wrap_content"
-    android:inputType="number"
+    android:inputType="number|numberSigned"
     android:ems="10"
     android:id="@+id/a2y"
     android:layout_alignBottom="@+id/a1y"
@@ -68,7 +68,7 @@ tools:context="com.vetrm.indoorpos.Settings$PlaceholderFragment">
 <EditText
     android:layout_width="100dp"
     android:layout_height="wrap_content"
-    android:inputType="number"
+    android:inputType="number|numberSigned"
     android:ems="10"
     android:id="@+id/a3y"
     android:layout_alignBottom="@+id/a1y"
@@ -78,7 +78,7 @@ tools:context="com.vetrm.indoorpos.Settings$PlaceholderFragment">
 <EditText
     android:layout_width="100dp"
     android:layout_height="wrap_content"
-    android:inputType="number"
+    android:inputType="number|numberSigned"
     android:ems="10"
     android:id="@+id/a1z"
     android:layout_below="@+id/a1y"
@@ -88,7 +88,7 @@ tools:context="com.vetrm.indoorpos.Settings$PlaceholderFragment">
 <EditText
     android:layout_width="100dp"
     android:layout_height="wrap_content"
-    android:inputType="number"
+    android:inputType="number|numberSigned"
     android:ems="10"
     android:id="@+id/a2z"
     android:layout_alignBottom="@+id/a1z"
@@ -97,7 +97,7 @@ tools:context="com.vetrm.indoorpos.Settings$PlaceholderFragment">
 <EditText
     android:layout_width="100dp"
     android:layout_height="wrap_content"
-    android:inputType="number"
+    android:inputType="number|numberSigned"
     android:ems="10"
     android:id="@+id/a3z"
     android:layout_alignBottom="@+id/a1z"
@@ -107,35 +107,38 @@ tools:context="com.vetrm.indoorpos.Settings$PlaceholderFragment">
 <EditText
     android:layout_width="75dp"
     android:layout_height="wrap_content"
-    android:inputType="number"
+    android:inputType="number|numberSigned"
     android:ems="10"
     android:id="@+id/p1"
-    android:layout_marginTop="45dp"
+    android:layout_marginTop="44dp"
     android:layout_below="@+id/a2z"
-    android:layout_centerHorizontal="true" />
+    android:layout_alignLeft="@+id/p2"
+    android:layout_alignStart="@+id/p2" />
 
 <EditText
     android:layout_width="75dp"
     android:layout_height="wrap_content"
-    android:inputType="number"
+    android:inputType="number|numberSigned"
     android:ems="10"
     android:id="@+id/p2"
     android:layout_below="@+id/p1"
-    android:layout_centerHorizontal="true" />
+    android:layout_alignLeft="@+id/a2z"
+    android:layout_alignStart="@+id/a2z" />
 
 <EditText
     android:layout_width="75dp"
     android:layout_height="wrap_content"
-    android:inputType="number"
+    android:inputType="number|numberSigned"
     android:ems="10"
     android:id="@+id/p3"
     android:layout_below="@+id/p2"
-    android:layout_centerHorizontal="true" />
+    android:layout_alignLeft="@+id/p2"
+    android:layout_alignStart="@+id/p2" />
 
 <EditText
     android:layout_width="50dp"
     android:layout_height="wrap_content"
-    android:inputType="number"
+    android:inputType="number|numberSigned"
     android:ems="10"
     android:id="@+id/p1rest"
     android:layout_alignTop="@+id/p1"
@@ -145,7 +148,7 @@ tools:context="com.vetrm.indoorpos.Settings$PlaceholderFragment">
 <EditText
     android:layout_width="50dp"
     android:layout_height="wrap_content"
-    android:inputType="number"
+    android:inputType="number|numberSigned"
     android:ems="10"
     android:id="@+id/p2rest"
     android:layout_below="@+id/p1rest"
@@ -155,7 +158,7 @@ tools:context="com.vetrm.indoorpos.Settings$PlaceholderFragment">
 <EditText
     android:layout_width="50dp"
     android:layout_height="wrap_content"
-    android:inputType="number"
+    android:inputType="number|numberSigned"
     android:ems="10"
     android:id="@+id/p3rest"
     android:layout_alignTop="@+id/p3"
@@ -168,8 +171,8 @@ tools:context="com.vetrm.indoorpos.Settings$PlaceholderFragment">
     android:text="New Text"
     android:id="@+id/p1before"
     android:layout_above="@+id/p2"
-    android:layout_toStartOf="@+id/btnOK"
-    android:layout_toLeftOf="@+id/btnOK" />
+    android:layout_alignRight="@+id/a1z"
+    android:layout_alignEnd="@+id/a1z" />
 
 <TextView
     android:layout_width="wrap_content"
@@ -223,49 +226,57 @@ tools:context="com.vetrm.indoorpos.Settings$PlaceholderFragment">
     android:layout_height="wrap_content"
     android:text="New Text"
     android:id="@+id/posy"
+    android:layout_marginTop="59dp"
     android:layout_below="@+id/p3"
-    android:layout_centerHorizontal="true"
-    android:layout_marginTop="63dp" />
+    android:layout_centerHorizontal="true" />
 
 <TextView
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:text="New Text"
     android:id="@+id/posz"
-    android:layout_alignBottom="@+id/posy"
-    android:layout_toEndOf="@+id/p3"
-    android:layout_toRightOf="@+id/p3" />
+    android:layout_above="@+id/offset"
+    android:layout_toRightOf="@+id/p3rest"
+    android:layout_toEndOf="@+id/p3rest" />
 
 <TextView
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:text="New Text"
     android:id="@+id/posx"
-    android:layout_alignBottom="@+id/posy"
-    android:layout_toStartOf="@+id/p3"
-    android:layout_toLeftOf="@+id/p3" />
+    android:layout_above="@+id/refresh"
+    android:layout_alignRight="@+id/a1z"
+    android:layout_alignEnd="@+id/a1z" />
 
 <Button
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
+    android:layout_height="70dp"
     android:text="Refresh"
     android:id="@+id/refresh"
-    android:layout_below="@+id/posy"
-    android:layout_alignLeft="@+id/btnOK"
-    android:layout_alignStart="@+id/btnOK"
     android:onClick="refresh"
-    />
+    android:layout_below="@+id/posy"
+    android:layout_toRightOf="@+id/a1z"
+    android:layout_toEndOf="@+id/a1z" />
 
     <ToggleButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="New ToggleButton"
         android:id="@+id/updown"
-        android:layout_below="@+id/refresh"
-        android:layout_alignLeft="@+id/refresh"
-        android:layout_alignStart="@+id/refresh"
         android:checked="false"
         android:onClick="revertUpDown"
-        />
+        android:layout_above="@+id/btnOK"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="70dp"
+        android:text="Offset"
+        android:id="@+id/offset"
+        android:onClick="setOffset"
+        android:layout_alignBottom="@+id/refresh"
+        android:layout_toRightOf="@+id/refresh"
+        android:layout_toEndOf="@+id/refresh"
+        android:layout_alignTop="@+id/refresh" />
 
 </RelativeLayout>

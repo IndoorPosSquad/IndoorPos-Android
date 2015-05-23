@@ -2,6 +2,8 @@ package com.vetrm.indoorpos;
 
 import android.util.Log;
 
+import com.threed.jpct.SimpleVector;
+
 import java.util.Arrays;
 
 /**
@@ -248,9 +250,19 @@ public class Compute {
         d1 = (float) Math.sqrt(Math.pow(pranges[0], 2) - Math.pow(h, 2));
         d2 = (float) Math.sqrt(Math.pow(pranges[1], 2) - Math.pow(h, 2));
         d3 = (float) Math.sqrt(Math.pow(pranges[2], 2) - Math.pow(h, 2));
-        COS = (d1 * d1 + AB * AB - d2 * d2) / (2 * d1 * AB);
+        COS = (S(d1) + S(AB) - S(d2)) / (2 * d1 * AB);
         X = d1 *COS;
+
         Y = (float) Math.sqrt(Math.pow(d1, 2) - Math.pow(X, 2));
+        // (X,Y) 在AB的另一侧(距离C点远的一侧), 则 Y = -Y
+        float CD = (_S * 2 / AB);
+        float AD = (float) Math.sqrt(S(AC) - S(CD));
+
+        float sub = len3d(new XYZ(AD, CD, 0), new XYZ(X, Y, 0));
+        log(sub - d3);
+        if (Math.abs(sub - d3) > 0.05f) {
+            Y = -Y;
+        }
 
         // 未知点在变换空间的坐标
         float[] res = new float[3];
@@ -285,8 +297,13 @@ public class Compute {
         result.x = ans[0] + pl_xyz[0].x;
         result.y = ans[1] + pl_xyz[0].y;
         result.z = ans[2] + pl_xyz[0].z;
+        if (result.z <= 0) {result.z = 0;}
 
         return result;
+    }
+
+    private static float len3d(XYZ p1, XYZ p2) {
+        return (float)Math.sqrt(S(p1.x - p2.x) + S(p1.y - p2.y) + S(p1.z - p2.z));
     }
 
     private static void log(Object obj) {
@@ -316,6 +333,12 @@ class XYZ {
         this.x = x;
         this.y = y;
         this.z = z;
+    }
+
+    public XYZ(SimpleVector v) {
+        this.x = v.x;
+        this.y = v.y;
+        this.z = v.z;
     }
 
     @Override

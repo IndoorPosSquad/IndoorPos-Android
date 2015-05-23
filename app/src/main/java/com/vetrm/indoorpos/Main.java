@@ -2,6 +2,7 @@ package com.vetrm.indoorpos;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.support.v7.app.ActionBarActivity;
@@ -15,7 +16,6 @@ import android.view.WindowManager;
 
 public class Main extends ActionBarActivity {
     private App app;
-    private TwoDimView twoDimView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,7 +23,9 @@ public class Main extends ActionBarActivity {
         setContentView(R.layout.activity_main);
 
         app = App.getInstance();
+        getAndApplyPreference();
 
+        // debug graphics
         if (true) {
             UsbDevice device = getIntent().getParcelableExtra(UsbManager.EXTRA_DEVICE);
             UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
@@ -31,13 +33,6 @@ public class Main extends ActionBarActivity {
         } else {
             app.setDevman(new DeviceMan());
         }
-
-//        requestWindowFeature(Window.FEATURE_NO_TITLE);
-//        // making it full screen
-//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-//        // set our MainGamePanel as the View
-//        setContentView(new MainGamePanel(this));
-
     }
 
 
@@ -78,6 +73,18 @@ public class Main extends ActionBarActivity {
     public void showSettings(View view) {
         Intent intent = new Intent(this, Settings.class);
         startActivity(intent);
+    }
+
+    public void getAndApplyPreference() {
+        SharedPreferences pref = getSharedPreferences(app.pref_file_name, 0);
+
+        app.setANCHOR_XYZ(new XYZ[]{
+                new XYZ(pref.getFloat("anchor1_x", 4.8f), pref.getFloat("anchor1_y", 0f),   pref.getFloat("anchor1_z", 4.0f)),
+                new XYZ(pref.getFloat("anchor2_x", 0f),   pref.getFloat("anchor2_y", 0f),   pref.getFloat("anchor2_z", 4.0f)),
+                new XYZ(pref.getFloat("anchor3_x", 0f),   pref.getFloat("anchor3_y", 4.8f), pref.getFloat("anchor3_z", 4.0f))
+        });
+
+        app.setDistOffset(new float[]{pref.getFloat("range1_offset", 0f), pref.getFloat("range2_offset", 0f), pref.getFloat("range3_offset", 0f)});
     }
 
     @Override

@@ -106,9 +106,9 @@ public class DeviceMan {
     public float[] readPL() {
         pos = setNewCount(pos);
 
-        float x = 0.5f * pos * pos + 8;
-        float y = pos / (pos + 7) + 8;
-        float z = pos + 9;
+        float x = 0.5f * pos * pos + 5;
+        float y = pos / (pos + 7) + 5;
+        float z = pos + 6;
 
         return  new float[]{x, y, z};
     }

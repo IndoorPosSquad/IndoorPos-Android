@@ -17,6 +17,8 @@ import android.widget.EdgeEffect;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.threed.jpct.SimpleVector;
+
 import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -42,6 +44,11 @@ public class Settings extends ActionBarActivity {
         //tv.setText("" + ranges[0]);
     }
 
+    public SimpleVector transfer(float x, float y, float z) {
+        final float factor = app.getDisplayFactor();
+        final XYZ offset = app.getDisplayOffset();
+        return new SimpleVector(factor * y + offset.y, factor * -z - offset.z, factor * -x - offset.x);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -67,15 +74,6 @@ public class Settings extends ActionBarActivity {
 
     public void doDisplay() {
         // preference
-        SharedPreferences pref = getSharedPreferences(app.pref_file_name, 0);
-
-        app.setANCHOR_XYZ(new XYZ[]{
-                new XYZ(pref.getFloat("anchor1_x", 4.8f), pref.getFloat("anchor1_y", 0f),   pref.getFloat("anchor1_z", 4.0f)),
-                new XYZ(pref.getFloat("anchor2_x", 0f),   pref.getFloat("anchor2_y", 0f),   pref.getFloat("anchor2_z", 4.0f)),
-                new XYZ(pref.getFloat("anchor3_x", 0f),   pref.getFloat("anchor3_y", 4.8f), pref.getFloat("anchor3_z", 4.0f))
-        });
-
-        app.setDistOffset(new float[]{pref.getFloat("range1_offset", 0f), pref.getFloat("range2_offset", 0f), pref.getFloat("range3_offset", 0f)});
 
         float[] ranges = devman.readDists();
 
@@ -148,44 +146,48 @@ public class Settings extends ActionBarActivity {
     public void doRefresh() {
         log("doing refresh...");
 
-        EditText a1x = (EditText) findViewById(R.id.a1x);
-        EditText a1y = (EditText) findViewById(R.id.a1y);
-        EditText a1z = (EditText) findViewById(R.id.a1z);
-        app.setANCHOR_XYZ(1, new XYZ(
-                Integer.parseInt(a1x.getText().toString()) / 100f,
-                Integer.parseInt(a1y.getText().toString()) / 100f,
-                Integer.parseInt(a1z.getText().toString()) / 100f
-        ));
+        try {
+            EditText a1x = (EditText) findViewById(R.id.a1x);
+            EditText a1y = (EditText) findViewById(R.id.a1y);
+            EditText a1z = (EditText) findViewById(R.id.a1z);
+            app.setANCHOR_XYZ(1, new XYZ(
+                    Integer.parseInt(a1x.getText().toString()) / 100f,
+                    Integer.parseInt(a1y.getText().toString()) / 100f,
+                    Integer.parseInt(a1z.getText().toString()) / 100f
+            ));
 
-        EditText a2x = (EditText) findViewById(R.id.a2x);
-        EditText a2y = (EditText) findViewById(R.id.a2y);
-        EditText a2z = (EditText) findViewById(R.id.a2z);
-        app.setANCHOR_XYZ(2, new XYZ(
-                Integer.parseInt(a2x.getText().toString()) / 100f,
-                Integer.parseInt(a2y.getText().toString()) / 100f,
-                Integer.parseInt(a2z.getText().toString()) / 100f
-        ));
+            EditText a2x = (EditText) findViewById(R.id.a2x);
+            EditText a2y = (EditText) findViewById(R.id.a2y);
+            EditText a2z = (EditText) findViewById(R.id.a2z);
+            app.setANCHOR_XYZ(2, new XYZ(
+                    Integer.parseInt(a2x.getText().toString()) / 100f,
+                    Integer.parseInt(a2y.getText().toString()) / 100f,
+                    Integer.parseInt(a2z.getText().toString()) / 100f
+            ));
 
-        EditText a3x = (EditText) findViewById(R.id.a3x);
-        EditText a3y = (EditText) findViewById(R.id.a3y);
-        EditText a3z = (EditText) findViewById(R.id.a3z);
-        app.setANCHOR_XYZ(3, new XYZ(
-                Integer.parseInt(a3x.getText().toString()) / 100f,
-                Integer.parseInt(a3y.getText().toString()) / 100f,
-                Integer.parseInt(a3z.getText().toString()) / 100f
-        ));
+            EditText a3x = (EditText) findViewById(R.id.a3x);
+            EditText a3y = (EditText) findViewById(R.id.a3y);
+            EditText a3z = (EditText) findViewById(R.id.a3z);
+            app.setANCHOR_XYZ(3, new XYZ(
+                    Integer.parseInt(a3x.getText().toString()) / 100f,
+                    Integer.parseInt(a3y.getText().toString()) / 100f,
+                    Integer.parseInt(a3z.getText().toString()) / 100f
+            ));
 
-        EditText p1 = (EditText) findViewById(R.id.p1);
-        EditText p2 = (EditText) findViewById(R.id.p2);
-        EditText p3 = (EditText) findViewById(R.id.p3);
-        EditText p1rest = (EditText) findViewById(R.id.p1rest);
-        EditText p2rest = (EditText) findViewById(R.id.p2rest);
-        EditText p3rest = (EditText) findViewById(R.id.p3rest);
-        app.setDistOffset(1, (Integer.parseInt(p1.getText().toString()) + Integer.parseInt(p1rest.getText().toString()) / 100f));
-        app.setDistOffset(2, (Integer.parseInt(p2.getText().toString()) + Integer.parseInt(p2rest.getText().toString()) / 100f));
-        app.setDistOffset(3, (Integer.parseInt(p3.getText().toString()) + Integer.parseInt(p3rest.getText().toString()) / 100f));
+            EditText p1 = (EditText) findViewById(R.id.p1);
+            EditText p2 = (EditText) findViewById(R.id.p2);
+            EditText p3 = (EditText) findViewById(R.id.p3);
+            EditText p1rest = (EditText) findViewById(R.id.p1rest);
+            EditText p2rest = (EditText) findViewById(R.id.p2rest);
+            EditText p3rest = (EditText) findViewById(R.id.p3rest);
+            app.setDistOffset(1, (Integer.parseInt(p1.getText().toString()) + Integer.parseInt(p1rest.getText().toString()) / 100f));
+            app.setDistOffset(2, (Integer.parseInt(p2.getText().toString()) + Integer.parseInt(p2rest.getText().toString()) / 100f));
+            app.setDistOffset(3, (Integer.parseInt(p3.getText().toString()) + Integer.parseInt(p3rest.getText().toString()) / 100f));
 
-        savePref();
+            savePref();
+        } catch (Exception e) {
+            log(e);
+        }
     }
 
     public void savePref() {
@@ -216,6 +218,21 @@ public class Settings extends ActionBarActivity {
         doDisplay();
     }
 
+    public void setOffset(View view) {
+        float[] ranges = devman.readDists();
+        app.setDistOffset(1, ranges[0] - 4.15f);
+        app.setDistOffset(2, ranges[1] - 3.35f);
+        app.setDistOffset(3, ranges[2] - 3.10f);
+
+        SharedPreferences.Editor editor = getSharedPreferences(app.pref_file_name, 0).edit();
+        editor.putFloat("range1_offset", app.getDistOffset(1));
+        editor.putFloat("range2_offset", app.getDistOffset(2));
+        editor.putFloat("range3_offset", app.getDistOffset(3));
+
+        doRefresh();
+        doDisplay();
+    }
+
     public void pressOk(View view) {
         doRefresh();
         Intent intent = new Intent(this, Main.class);
@@ -235,7 +252,7 @@ public class Settings extends ActionBarActivity {
             @Override
             public void run() {
             }
-        }, 5*1000, 5*1000);
+        }, 5 * 1000, 5 * 1000);
     }
 
 /*    *//**
