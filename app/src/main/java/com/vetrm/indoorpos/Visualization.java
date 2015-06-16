@@ -53,10 +53,6 @@ public class Visualization extends ActionBarActivity {
     private Object3D cube = null;
     private Object3D ground = null;
 
-    private Object3D wall1 = null;
-    private Object3D wall2 = null;
-
-
     private int fps = 0;
     private boolean gl2 = true;
 
@@ -339,6 +335,8 @@ public class Visualization extends ActionBarActivity {
 //                cube2.translate(transfer(0f, 0f, 0.2f));
 
 
+
+                Object3D wall1;
                 // TODO get image for wall1 and wall2
                 wall1 = Primitives.getPlane((int) (1 * 2 * app.getDisplayFactor()), 1);
                 wall1.calcTextureWrap();
@@ -421,6 +419,7 @@ public class Visualization extends ActionBarActivity {
                 world.addObject(cyl9);
                 cyl9.translate(transfer(-2f, -4f, 1.0f));
 
+                Object3D wall2;
                 wall2 = Primitives.getPlane((int) (1 * 2 * app.getDisplayFactor()), 1);
                 wall2.calcTextureWrap();
                 wall2.strip();
