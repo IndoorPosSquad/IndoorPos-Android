@@ -3,10 +3,12 @@ package com.vetrm.indoorpos;
 import android.opengl.GLSurfaceView;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.FloatMath;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.View;
 
 import com.threed.jpct.Camera;
 import com.threed.jpct.FrameBuffer;
@@ -46,8 +48,10 @@ public class Visualization extends ActionBarActivity {
     private float touchTurn = 0;
     private float touchTurnUp = 0;
 
+    private int mode = 0;
     private float xpos = -1;
     private float ypos = -1;
+    private float oldDist;
 
     private Object3D target = null;
     private Object3D cube = null;
@@ -63,7 +67,7 @@ public class Visualization extends ActionBarActivity {
     private Light sun = null;
 
     private Camera cam;
-    private OrbitControls controls;
+    private TwoDConstrols controls;
 
     private XYZ[] currentPos = new XYZ[]{
             new XYZ(0f, 4.8f, 3.000000f),
@@ -169,90 +173,69 @@ public class Visualization extends ActionBarActivity {
         Log.d("Visual", "" + obj);
     }
 
-    public boolean onTouchEvent(MotionEvent me) {
-//        switch (me.getAction() & MotionEvent.ACTION_MASK) {
-//            case MotionEvent.ACTION_DOWN:
-//                start.set(event.getX(), event.getY());
-//                Log.d(TAG, "mode=DRAG");
-//                mode = DRAG;
-//                break;
-//            case MotionEvent.ACTION_POINTER_DOWN:
-//                oldDist = spacing(event);
-//                Log.d(TAG, "oldDist=" + oldDist);
-//                if (oldDist > 10f) {
-//                    savedMatrix.set(matrix);
-//                    midPoint(mid, event);
-//                    mode = ZOOM;
-//                    Log.d(TAG, "mode=ZOOM");
-//                }
-//                break;
-//            case MotionEvent.ACTION_UP:
-//            case MotionEvent.ACTION_POINTER_UP:
-//                mode = NONE;
-//                Log.d(TAG, "mode=NONE");
-//                break;
-//            case MotionEvent.ACTION_MOVE:
-//                if (mode == DRAW){ onTouchEvent(event);}
-//                if (mode == DRAG) {
-//                    ///code for draging..
-//                }
-//                else if (mode == ZOOM) {
-//                    float newDist = spacing(event);
-//                    Log.d(TAG, "newDist=" + newDist);
-//                    if (newDist > 10f) {
-//                        matrix.set(savedMatrix);
-//                        float scale = newDist / oldDist;
-//                        matrix.getValues(matrixValues);
-//                        float currentScale = matrixValues[Matrix.MSCALE_X];
-//                        // limit zoom
-//                        if (scale * currentScale > maxZoom) {
-//                            scale = maxZoom / currentScale;
-//                        }else if(scale * currentScale < minZoom){
-//                            scale = minZoom / currentScale;
-//                        }
-//                        matrix.postScale(scale, scale, mid.x, mid.y);
-//                    }
-//                }
-//                break;
-//        }
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getAction() & MotionEvent.ACTION_MASK) {
+            case MotionEvent.ACTION_DOWN:
+                xpos = event.getX();
+                ypos = event.getY();
+                mode = 1;
+                break;
+            case MotionEvent.ACTION_UP:
+                xpos = -1;
+                ypos = -1;
+                touchTurn = 0;
+                touchTurnUp = 0;
+                mode = 0;
+                break;
+            case MotionEvent.ACTION_POINTER_UP:
+                mode -= 1;
+                break;
+            case MotionEvent.ACTION_POINTER_DOWN:
+                oldDist = spacing(event);
+                log("Old Dist:" + oldDist);
+                mode += 1;
+                break;
 
-        if (me.getAction() == MotionEvent.ACTION_DOWN) {
-            xpos = me.getX();
-            ypos = me.getY();
-            return true;
+            case MotionEvent.ACTION_MOVE:
+                if (mode >= 2) {
+                    float newDist = spacing(event);
+                    log("New Dist:" + newDist);
+                    if (newDist > oldDist + 1) {
+                        controls.moveZ(newDist / oldDist / 20);
+                        oldDist = newDist;
+                    }
+                    if (newDist < oldDist - 1) {
+                        controls.moveZ(- newDist / oldDist / 20);
+                        oldDist = newDist;
+                    }
+                } else {
+                    float xd = event.getX() - xpos;
+                    float yd = event.getY() - ypos;
+
+                    xpos = event.getX();
+                    ypos = event.getY();
+
+                    touchTurn = xd / -100f;
+                    touchTurnUp = yd / -100f;
+                }
+                break;
+            default:
+                try {
+                    Thread.sleep(15);
+                } catch (Exception e) {
+                    // No need for this...
+                }
+                return super.onTouchEvent(event);
         }
 
-        if (me.getAction() == MotionEvent.ACTION_UP) {
-            xpos = -1;
-            ypos = -1;
-            touchTurn = 0;
-            touchTurnUp = 0;
-            return true;
-        }
-
-        if (me.getAction() == MotionEvent.ACTION_MOVE) {
-            float xd = me.getX() - xpos;
-            float yd = me.getY() - ypos;
-
-            xpos = me.getX();
-            ypos = me.getY();
-
-            touchTurn = xd / -100f;
-            touchTurnUp = yd / -100f;
-            return true;
-        }
-
-//        if (me.getAction() == MotionEvent.)
-
-        try {
-            Thread.sleep(15);
-        } catch (Exception e) {
-            // No need for this...
-        }
-
-        return super.onTouchEvent(me);
+        return true;
     }
 
+    private float spacing(MotionEvent event) {
+        float x = event.getX(0) - event.getX(1);
+        float y = event.getY(0) - event.getY(1);
+        return FloatMath.sqrt(x * x + y * y);
+    }
 
     protected boolean isFullscreenOpaque() {
         return true;
@@ -313,7 +296,7 @@ public class Visualization extends ActionBarActivity {
                 Texture red_color = new Texture(BitmapHelper.rescale(BitmapHelper.convert(getResources().getDrawable(R.mipmap.red_color)), 1024, 1024));
                 TextureManager.getInstance().addTexture("red", red_color);
 
-                target = Primitives.getSphere(0.5f);
+                target = Primitives.getSphere(0.1f);
                 target.calcTextureWrap();
                 target.setTexture("grass ground");
                 target.strip();
@@ -339,267 +322,38 @@ public class Visualization extends ActionBarActivity {
 //                cube2.translate(transfer(0f, 0f, 0.2f));
 
 
-                // TODO get image for wall1 and wall2
-                wall1 = Primitives.getPlane((int) (1 * 2 * app.getDisplayFactor()), 1);
-                wall1.calcTextureWrap();
-                wall1.strip();
-                wall1.build();
-                //wall1.rotateX((float) Math.PI / 2f);
-                wall1.translate(transfer(-2, -1, 1));
-                world.addObject(wall1);
-
-                Object3D cyl1 = null;
-                cyl1 = Primitives.getCylinder(90, 0.05f , 40);
-                cyl1.calcTextureWrap();
-                cyl1.setTexture("ground");
-                cyl1.strip();
-                cyl1.build();
-                world.addObject(cyl1);
-                cyl1.translate(transfer(-2f, 0f, 1.0f));
-                Object3D cyl2 = null;
-                cyl2 = Primitives.getCylinder(90, 0.05f , 40);
-                cyl2.calcTextureWrap();
-                cyl2.setTexture("ground");
-                cyl2.strip();
-                cyl2.build();
-                world.addObject(cyl2);
-                cyl2.translate(transfer(-2f, -1f, 1.0f));
-                Object3D cyl3 = null;
-                cyl3 = Primitives.getCylinder(90, 0.05f , 40);
-                cyl3.calcTextureWrap();
-                cyl3.setTexture("ground");
-                cyl3.strip();
-                cyl3.build();
-                world.addObject(cyl3);
-                cyl3.translate(transfer(-2f, -2f, 1.0f));
-                Object3D cyl4 = null;
-                cyl4 = Primitives.getCylinder(90, 0.05f , 40);
-                cyl4.calcTextureWrap();
-                cyl4.setTexture("ground");
-                cyl4.strip();
-                cyl4.build();
-                world.addObject(cyl4);
-                cyl4.translate(transfer(-1f, -2f, 1.0f));
-                Object3D cyl5 = null;
-                cyl5 = Primitives.getCylinder(90, 0.05f , 40);
-                cyl5.calcTextureWrap();
-                cyl5.setTexture("ground");
-                cyl5.strip();
-                cyl5.build();
-                world.addObject(cyl5);
-                cyl5.translate(transfer(0f, -2f, 1.0f));
-                Object3D cyl6 = null;
-                cyl6 = Primitives.getCylinder(90, 0.05f , 40);
-                cyl6.calcTextureWrap();
-                cyl6.setTexture("ground");
-                cyl6.strip();
-                cyl6.build();
-                world.addObject(cyl6);
-                cyl6.translate(transfer(-3f, -2f, 1.0f));
-                Object3D cyl7 = null;
-                cyl7 = Primitives.getCylinder(90, 0.05f , 40);
-                cyl7.calcTextureWrap();
-                cyl7.setTexture("ground");
-                cyl7.strip();
-                cyl7.build();
-                world.addObject(cyl7);
-                cyl7.translate(transfer(-4f, -2f, 1.0f));
-                Object3D cyl8 = null;
-                cyl8 = Primitives.getCylinder(90, 0.05f , 40);
-                cyl8.calcTextureWrap();
-                cyl8.setTexture("ground");
-                cyl8.strip();
-                cyl8.build();
-                world.addObject(cyl8);
-                cyl8.translate(transfer(-2f, -3f, 1.0f));
-                Object3D cyl9 = null;
-                cyl9 = Primitives.getCylinder(90, 0.05f , 40);
-                cyl9.calcTextureWrap();
-                cyl9.setTexture("ground");
-                cyl9.strip();
-                cyl9.build();
-                world.addObject(cyl9);
-                cyl9.translate(transfer(-2f, -4f, 1.0f));
-
-                wall2 = Primitives.getPlane((int) (1 * 2 * app.getDisplayFactor()), 1);
-                wall2.calcTextureWrap();
-                wall2.strip();
-                wall2.build();
-                wall2.translate(transfer(-1, -2, 1));
-                wall2.rotateY(-(float) Math.PI / 2f);
-                world.addObject(wall2);
-                wall1 = Primitives.getPlane((int) (1 * 2 * app.getDisplayFactor()), 1);
-                wall1.calcTextureWrap();
-                wall1.strip();
-                wall1.build();
-                //wall1.rotateX((float) Math.PI / 2f);
-                wall1.translate(transfer(-2, -1, 1));
-                world.addObject(wall1);
-
-                Object3D wall3;
-                wall3 = Primitives.getPlane((int) (1 * 2 * app.getDisplayFactor()), 1);
-                wall3.calcTextureWrap();
-                wall3.strip();
-                wall3.build();
-                wall3.translate(transfer(-3, -2, 1));
-                wall3.rotateY(-(float) Math.PI / 2f);
-                world.addObject(wall3);
-                Object3D wall4;
-                wall4 = Primitives.getPlane((int) (1 * 2 * app.getDisplayFactor()), 1);
-                wall4.calcTextureWrap();
-                wall4.strip();
-                wall4.build();
-                //wall1.rotateX((float) Math.PI / 2f);
-                wall4.translate(transfer(-2, -3, 1));
-                world.addObject(wall4);
-
-                Object3D table1;
-                table1 = Primitives.getCube(0.55f);
+                Object3D table1, table2;
+                table1 = Primitives.getPlane((int) (0.75 * 2 * app.getDisplayFactor()), 1f);
                 table1.calcTextureWrap();
                 table1.setTexture("table");
                 table1.strip();
                 table1.build();
-                //table1.rotateX((float) Math.PI / 2f);
-                table1.translate(transfer(-1f, -0.4f, 0.40f));
-                table1.rotateY((float) Math.PI / 4f);
+                table1.translate(transfer(0f, -0.45f, 0.8f));
+                table1.rotateX((float) Math.PI / 2f);
                 world.addObject(table1);
-                Object3D table2;
-                table2 = Primitives.getCube(0.55f);
+
+                table2 = Primitives.getPlane((int) (0.75 * 2 * app.getDisplayFactor()), 1f);
                 table2.calcTextureWrap();
                 table2.setTexture("table");
                 table2.strip();
                 table2.build();
-                //table1.rotateX((float) Math.PI / 2f);
-                table2.translate(transfer(-1f, -0.4f + 0.55f, 0.40f));
-                table2.rotateY((float) Math.PI / 4f);
+                table2.translate(transfer(0f, 0.45f, 0.8f));
+                table2.rotateX((float) Math.PI / 2f);
                 world.addObject(table2);
-                Object3D table3;
-                table3 = Primitives.getCube(0.55f);
-                table3.calcTextureWrap();
-                table3.setTexture("table");
-                table3.strip();
-                table3.build();
-                //table1.rotateX((float) Math.PI / 2f);
-                table3.translate(transfer(-0.4f, -1f, 0.40f));
-                table3.rotateY((float) Math.PI / 4f);
-                world.addObject(table3);
-                Object3D table4;
-                table4 = Primitives.getCube(0.55f);
-                table4.calcTextureWrap();
-                table4.setTexture("table");
-                table4.strip();
-                table4.build();
-                //table1.rotateX((float) Math.PI / 2f);
-                table4.translate(transfer(-0.4f + 0.55f, -1f, 0.40f));
-                table4.rotateY((float) Math.PI / 4f);
-                world.addObject(table4);
 
-
-                Object3D square1 = null;
-                square1 = Primitives.getPlane((int) (1 * 2 * app.getDisplayFactor()), 1.06f);
-                square1.calcTextureWrap();
-                square1.setTexture("red");
-                square1.strip();
-                square1.build();
-                square1.translate(transfer(1.5f, 0f, 0.05f));
-                square1.rotateX((float) Math.PI / 2f);
-                square1.rotateY((float) Math.PI / 4f);
-                world.addObject(square1);
-                Object3D square2 = null;
-                square2 = Primitives.getPlane((int) (1 * 2 * app.getDisplayFactor()), 1.06f);
-                square2.calcTextureWrap();
-                square2.setTexture("red");
-                square2.strip();
-                square2.build();
-                square2.translate(transfer(0f, 1.5f, 0.05f));
-                square2.rotateX((float) Math.PI / 2f);
-                square2.rotateY((float) Math.PI / 4f);
-                world.addObject(square2);
-                Object3D square3 = null;
-                square3 = Primitives.getPlane((int) (1 * 2 * app.getDisplayFactor()), 1.06f);
-                square3.calcTextureWrap();
-                square3.setTexture("red");
-                square3.strip();
-                square3.build();
-                square3.translate(transfer(0f, 1.5f, 0.05f));
-                square3.rotateX((float) Math.PI / 2f);
-                square3.rotateY((float) Math.PI / 4f);
-                world.addObject(square3);
-                Object3D square4 = null;
-                square4 = Primitives.getPlane((int) (1 * 2 * app.getDisplayFactor()), 1.06f);
-                square4.calcTextureWrap();
-                square4.setTexture("red");
-                square4.strip();
-                square4.build();
-                square4.translate(transfer(-1.414f, 1.5f+1.414f, 0.05f));
-                square4.rotateX((float) Math.PI / 2f);
-                square4.rotateY((float) Math.PI / 4f);
-                world.addObject(square4);
-                Object3D square5 = null;
-                square5 = Primitives.getPlane((int) (1 * 2 * app.getDisplayFactor()), 1.06f);
-                square5.calcTextureWrap();
-                square5.setTexture("red");
-                square5.strip();
-                square5.build();
-                square5.translate(transfer(1.414f + 1.5f, -1.414f, 0.05f));
-                square5.rotateX((float) Math.PI / 2f);
-                square5.rotateY((float) Math.PI / 4f);
-                world.addObject(square5);
-                Object3D square6 = null;
-                square6 = Primitives.getPlane((int) (1 * 2 * app.getDisplayFactor()), 1.06f);
-                square6.calcTextureWrap();
-                square6.setTexture("red");
-                square6.strip();
-                square6.build();
-                square6.translate(transfer(1.414f+1.414f + 1.5f, -1.414f + -1.414f, 0.05f));
-                square6.rotateX((float) Math.PI / 2f);
-                square6.rotateY((float) Math.PI / 4f);
-                world.addObject(square6);
-                Object3D square7 = null;
-                square7 = Primitives.getPlane((int) (1 * 2 * app.getDisplayFactor()), 1.50f);
-                square7.calcTextureWrap();
-                square7.setTexture("red");
-                square7.strip();
-                square7.build();
-                square7.translate(transfer(-1.414f - 1.414f / 3 - 0.3f, 1.414f + 1.414f + 0.3f, 0.05f));
-                square7.rotateX((float) Math.PI / 2f);
-                square7.rotateY((float) Math.PI / 4f);
-                world.addObject(square7);
-                Object3D square8 = null;
-                square8 = Primitives.getPlane((int) (1 * 2 * app.getDisplayFactor()), 1.50f);
-                square8.calcTextureWrap();
-                square8.setTexture("red");
-                square8.strip();
-                square8.build();
-                square8.translate(transfer(-1.414f - 1.414f / 3 - 2.112f - 0.3f, 1.414f + 1.414f - 2.12f + 0.3f, 0.05f));
-                square8.rotateX((float) Math.PI / 2f);
-                square8.rotateY((float) Math.PI / 4f);
-                world.addObject(square8);
-                Object3D square9 = null;
-                square9 = Primitives.getPlane((int) (1 * 2 * app.getDisplayFactor()), 1.50f);
-                square9.calcTextureWrap();
-                square9.setTexture("red");
-                square9.strip();
-                square9.build();
-                square9.translate(transfer(-1.414f - 1.414f / 3 - 2.112f - 1.5f - 0.3f, 1.414f + 1.414f - 2.12f - 1.5f + 0.3f, 0.05f));
-                square9.rotateX((float) Math.PI / 2f);
-                square9.rotateY((float) Math.PI / 4f);
-                world.addObject(square9);
-
-                ground = Primitives.getPlane((int) (6 * 2 * app.getDisplayFactor()), 1.06f);
+                ground = Primitives.getPlane((int) (3 * 2 * app.getDisplayFactor()), 1.06f);
                 ground.calcTextureWrap();
                 ground.setTexture("ground");
                 ground.strip();
                 ground.build();
                 ground.translate(0, 0, 0);
                 ground.rotateX((float) Math.PI / 2f);
-                ground.rotateY((float) Math.PI / 4f);
                 world.addObject(ground);
 
                 currentPos = app.getANCHOR_XYZ();
 
                 for (int i = 0; i < currentPos.length; i++) {
-                    Object3D pl = Primitives.getDoubleCone(0.3f);
+                    Object3D pl = Primitives.getDoubleCone(0.05f);
                     anchors[i] = pl;
                     pl.calcTextureWrapSpherical();
                     pl.strip();
@@ -609,10 +363,10 @@ public class Visualization extends ActionBarActivity {
                 }
 
                 cam = world.getCamera();
-                cam.setPosition(transfer(6f, 6f, 5f));
+                cam.setPosition(transfer(0.2f, 0f, 8f));
                 cam.lookAt(target.getTransformedCenter());
 
-                controls = new OrbitControls(cam);
+                controls = new TwoDConstrols(cam);
 
                 sun.setPosition(new SimpleVector(transfer(100,100,100)));
                 MemoryHelper.compact();
@@ -632,12 +386,12 @@ public class Visualization extends ActionBarActivity {
             target.rotateX(0.01f);
 
             if (touchTurn != 0) {
-                controls.spinHorizontal(touchTurn / 10);
+                controls.moveX(touchTurn / 2);
                 touchTurn = 0;
             }
 
             if (touchTurnUp != 0) {
-                controls.spinVertical(-touchTurnUp / 10);
+                controls.moveY(-touchTurnUp / 2);
                 touchTurnUp = 0;
             }
 
@@ -702,6 +456,33 @@ if (touchTurn != 0) {
         touchTurnUp = 0;
         }
         */
+class TwoDConstrols {
+    private Camera camera;
+    public TwoDConstrols(Camera cam) {
+        camera = cam;
+    }
+
+    public void moveX(float scale) {
+        SimpleVector pos = new SimpleVector();
+        camera.getPosition(pos);
+        pos.x += scale;
+        camera.setPosition(pos);
+    }
+
+    public void moveY(float scale) {
+        SimpleVector pos = new SimpleVector();
+        camera.getPosition(pos);
+        pos.z += scale;
+        camera.setPosition(pos);
+    }
+
+    public void moveZ(float scale) {
+        SimpleVector pos = new SimpleVector();
+        camera.getPosition(pos);
+        pos.y += scale;
+        camera.setPosition(pos);
+    }
+}
 
 class OrbitControls {
     private Camera camera;
@@ -733,7 +514,7 @@ class OrbitControls {
 
         // don't spin vertically when exceed given tangent range, currently (0, 3)
         float tan = -position.y / (float) (Math.sqrt(Math.pow(position.x, 2) + Math.pow(position.z, 2)));
-        if (!((tan < 0 && deg < 0) || (tan > 3 && deg > 0))) {
+        if (!((tan < 0 && deg < 0) || (tan > 8 && deg > 0))) {
             position.rotateAxis(axis, deg);
             camera.setPosition(position);
             camera.lookAt(new SimpleVector(0f, 0f, 0f));
@@ -750,3 +531,5 @@ class OrbitControls {
         Log.d("OrbitControl", "" + obj);
     }
 }
+//        if (me.getAction() == MotionEvent.)
+//        if (me.getAction() == MotionEvent.)

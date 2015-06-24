@@ -77,7 +77,12 @@ public class DeviceMan {
         final int len = 64;
         byte[] distInfo = new byte[len];
 
-        log("BulkRead Status: " + conn.bulkTransfer(ep, distInfo, distInfo.length, 0));
+        // TODO
+        int res = conn.bulkTransfer(ep, distInfo, distInfo.length, 0);
+        log("BulkRead Status: " + res);
+        if (res != 64) {
+            return null;
+        }
         log(Arrays.toString(distInfo));
 
         float[] result = new float[3];
@@ -89,11 +94,13 @@ public class DeviceMan {
             result[i] = byteArrayToInt(aNum) / 100f;
         }
 
-
         result[0] -= app.getDistOffset(1);
         result[1] -= app.getDistOffset(2);
         result[2] -= app.getDistOffset(3);
         //[117.37, 124.98, 89.94]
+        result[0] = justify(result[0]);
+        result[1] = justify(result[1]);
+        result[2] = justify(result[2]);
 
         log(Arrays.toString(result));
         return result;
@@ -106,9 +113,9 @@ public class DeviceMan {
     public float[] readPL() {
         pos = setNewCount(pos);
 
-        float x = 0.5f * pos * pos + 5;
-        float y = pos / (pos + 7) + 5;
-        float z = pos + 6;
+        float x = (0.5f * pos * pos + 3);
+        float y = pos / (pos + 7) + 3 ;
+        float z = pos + 5;
 
         return  new float[]{x, y, z};
     }
@@ -128,5 +135,14 @@ public class DeviceMan {
             value += (b[i] & 0x000000FF) << shift;
         }
         return value;
+    }
+
+    public static float justify(float x) {
+        if (x < 0.1) {
+            return 0.1f;
+        }
+        else {
+            return x;
+        }
     }
 }

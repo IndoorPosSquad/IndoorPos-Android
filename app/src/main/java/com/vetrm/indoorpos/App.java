@@ -17,7 +17,7 @@ public class App extends Application {
 
     static String pref_file_name = "pref";
 
-    private static float displayFactor = 2f;
+    private static float displayFactor = 1f;
 
     private static XYZ displayOffset = new XYZ(0f, 0f, 0f);
 

@@ -13,6 +13,9 @@ public class Compute {
     static int step = 1;
     static int pos = 0;
 
+    static XYZ posBuf[] = new XYZ[]{new XYZ(), new XYZ(), new XYZ()};
+    static int pointer = 0;
+
     static float[][] pseudolites = new float[][] {
             {10.0f, 10.0f, 3.0f},
             {0.0f, 0.0f, 3.0f},
@@ -297,13 +300,46 @@ public class Compute {
         result.x = ans[0] + pl_xyz[0].x;
         result.y = ans[1] + pl_xyz[0].y;
         result.z = ans[2] + pl_xyz[0].z;
-        if (result.z <= 0) {result.z = 0;}
 
-        return result;
+        return posFilter(posConstrain(result));
     }
 
     private static float len3d(XYZ p1, XYZ p2) {
         return (float)Math.sqrt(S(p1.x - p2.x) + S(p1.y - p2.y) + S(p1.z - p2.z));
+    }
+
+    public static XYZ posConstrain(XYZ pos) {
+        XYZ ans = pos;
+        if (ans.z <= 0.8) {
+            ans.z = 0.8f;
+        }
+        return ans;
+    }
+
+    public static XYZ posFilter(XYZ newPos) {
+        return newPos;
+       /*
+        if (oldPos.x == 0f && oldPos.y == 0f && oldPos.z == 0f) {
+            oldPos = newPos;
+            return newPos;
+        }
+
+        if (oldPos.len() >= 4f) {
+            oldPos = newPos;
+            return newPos;
+        }
+
+        XYZ ans;
+        XYZ delta = newPos.sub(oldPos);
+        log("delta:" + delta);
+        if (delta.len() <= 0.3f) {
+            ans = newPos;
+        } else {
+            ans = oldPos.add(delta.scale(0.3f / delta.len()));
+        }
+        oldPos = ans;
+        return ans;
+        */
     }
 
     private static void log(Object obj) {
@@ -333,6 +369,22 @@ class XYZ {
         this.x = x;
         this.y = y;
         this.z = z;
+    }
+
+    public XYZ add(XYZ another) {
+        return new XYZ(x + another.x, y + another.y, z + another.z);
+    }
+
+    public XYZ sub(XYZ another) {
+        return new XYZ(x - another.x, y - another.y, z - another.z);
+    }
+
+    public XYZ scale(float factor) {
+        return new XYZ(x * factor, y * factor, z * factor);
+    }
+
+    public float len() {
+        return (float) Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2));
     }
 
     public XYZ(SimpleVector v) {
