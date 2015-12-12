@@ -22,8 +22,6 @@ public class Compute {
             {0.0f, 10.0f, 3.0f}
     };
 
-
-
     private static float sgn(float x) {
         if (x > 0) {
             return 1.0f;
@@ -304,42 +302,39 @@ public class Compute {
         return posFilter(posConstrain(result));
     }
 
-    private static float len3d(XYZ p1, XYZ p2) {
+    static float len3d(XYZ p1, XYZ p2) {
         return (float)Math.sqrt(S(p1.x - p2.x) + S(p1.y - p2.y) + S(p1.z - p2.z));
     }
 
     public static XYZ posConstrain(XYZ pos) {
         XYZ ans = pos;
-        if (ans.z <= 0.8) {
-            ans.z = 0.8f;
+        if (ans.z <= 0.45) {
+            ans.z = 0.45f;
+        } else if (ans.z >= 0.80f) {
+            ans.z = 0.80f;
         }
         return ans;
     }
 
+    public static XYZ filterBuffer[] = new XYZ[] {new XYZ(), new XYZ(), new XYZ()};
+
     public static XYZ posFilter(XYZ newPos) {
-        return newPos;
-       /*
-        if (oldPos.x == 0f && oldPos.y == 0f && oldPos.z == 0f) {
-            oldPos = newPos;
-            return newPos;
+        filterBuffer[2] = filterBuffer[1];
+        filterBuffer[1] = filterBuffer[0];
+        filterBuffer[0] = newPos;
+
+        int count = 0;
+        XYZ accum = new XYZ();
+        for (int i = 0; i < 3; i++) {
+            if (filterBuffer[i].x != 0f && filterBuffer[i].y != 0f && filterBuffer[i].z != 0f) {
+                count += 1;
+                accum.x += filterBuffer[i].x;
+                accum.y += filterBuffer[i].y;
+                accum.z += filterBuffer[i].z;
+            }
         }
 
-        if (oldPos.len() >= 4f) {
-            oldPos = newPos;
-            return newPos;
-        }
-
-        XYZ ans;
-        XYZ delta = newPos.sub(oldPos);
-        log("delta:" + delta);
-        if (delta.len() <= 0.3f) {
-            ans = newPos;
-        } else {
-            ans = oldPos.add(delta.scale(0.3f / delta.len()));
-        }
-        oldPos = ans;
-        return ans;
-        */
+        return new XYZ(accum.x / count, accum.y / count, accum.z /count);
     }
 
     private static void log(Object obj) {

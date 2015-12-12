@@ -25,6 +25,8 @@ public class App extends Application {
     // true = down, false = up
     private static boolean downup = true;
 
+    static XYZ defaultPos = new XYZ(-0.7f, 0f, 0.70f);
+
     public static XYZ getDisplayOffset() {
         return displayOffset;
     }

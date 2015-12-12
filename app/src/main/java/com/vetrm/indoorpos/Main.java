@@ -44,7 +44,7 @@ public class Main extends ActionBarActivity {
         getAndApplyPreference();
 
         // debug graphics
-        if (false) {
+        if (true) {
             UsbDevice device = getIntent().getParcelableExtra(UsbManager.EXTRA_DEVICE);
             UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
             app.setDevman(new DeviceMan(device, manager));
@@ -57,7 +57,6 @@ public class Main extends ActionBarActivity {
             @Override
             public void run() {
                 // TODO Auto-generated method stub
-                // 在此处添加执行的代码
                 testAnchors();
                 Log.d("Handler:", "running testAnchors()");
 
@@ -99,7 +98,7 @@ public class Main extends ActionBarActivity {
     }
 
     public void testAnchors() {
-        float res[] = app.getDevman().readDists();
+        float res[] = app.getDevman().readRawDists();
         Log.d("Main: testAnchors;", Arrays.toString(res));
 
         if (Math.abs(a1 - res[0]) <= 0.01f) { count1 += 1; } else { count1 = 0; }
@@ -108,24 +107,24 @@ public class Main extends ActionBarActivity {
         a1 = res[0]; a2 = res[1]; a3 = res[2];
 
         if (Math.abs(res[0]) > 200) {
-            anchor1.setImageResource(R.mipmap.red);
-        } else if (count1 >= 2) {
+            anchor1.setImageResource(R.mipmap.yellow);
+        } else if (count1 >= 4) {
             anchor1.setImageResource(R.mipmap.red);
         } else {
             anchor1.setImageResource(R.mipmap.green);
         }
 
-        if (Math.abs(res[0]) > 200) {
-            anchor2.setImageResource(R.mipmap.red);
-        } else if (count2 >= 2) {
+        if (Math.abs(res[1]) > 200) {
+            anchor2.setImageResource(R.mipmap.yellow);
+        } else if (count2 >= 4) {
             anchor2.setImageResource(R.mipmap.red);
         } else {
             anchor2.setImageResource(R.mipmap.green);
         }
 
-        if (Math.abs(res[0]) > 200) {
-            anchor3.setImageResource(R.mipmap.red);
-        } else if (count3 >= 2) {
+        if (Math.abs(res[2]) > 200) {
+            anchor3.setImageResource(R.mipmap.yellow);
+        } else if (count3 >= 4) {
             anchor3.setImageResource(R.mipmap.red);
         } else {
             anchor3.setImageResource(R.mipmap.green);
@@ -133,9 +132,26 @@ public class Main extends ActionBarActivity {
     }
 
     public void setOffset(View view) {
-        anchor1.setImageResource(R.mipmap.red);
-        anchor2.setImageResource(R.mipmap.green);
-        anchor3.setImageResource(R.mipmap.green);
+        float raw[] = app.getDevman().readRawDists();
+
+        Log.d("Main, raw[]", Arrays.toString(raw));
+
+        float lens[] = new float[]{
+                Compute.len3d(app.defaultPos, app.getANCHOR_XYZ(1)),
+                Compute.len3d(app.defaultPos, app.getANCHOR_XYZ(2)),
+                Compute.len3d(app.defaultPos, app.getANCHOR_XYZ(3))
+        };
+
+        Log.d("Main, len[]", Arrays.toString(raw));
+
+        for (int i = 0; i < 3; i += 1) {
+            app.setDistOffset(i + 1, raw[i] - lens[i] - 0.10f);
+        }
+
+        SharedPreferences.Editor editor = getSharedPreferences(app.pref_file_name, 0).edit();
+        editor.putFloat("range1_offset", app.getDistOffset(1));
+        editor.putFloat("range2_offset", app.getDistOffset(2));
+        editor.putFloat("range3_offset", app.getDistOffset(3));
     }
 
     public void showSettings(View view) {
@@ -158,6 +174,4 @@ public class Main extends ActionBarActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
     }
-
-
 }

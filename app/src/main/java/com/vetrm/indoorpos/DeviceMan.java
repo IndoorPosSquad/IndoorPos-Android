@@ -106,6 +106,34 @@ public class DeviceMan {
         return result;
     }
 
+    public float[] readRawDists() {
+        if (DEBUG_GRAPHIC) {
+            return new float[] {104f, 103f, 88f};
+        }
+        final int len = 64;
+        byte[] distInfo = new byte[len];
+
+        // TODO
+        int res = conn.bulkTransfer(ep, distInfo, distInfo.length, 0);
+        log("BulkRead Status: " + res);
+        if (res != 64) {
+            return null;
+        }
+        log(Arrays.toString(distInfo));
+
+        float[] result = new float[3];
+        for (int i = 0; i < 3; i++) {
+            byte[] aNum = new byte[4];
+            for (int j = 0; j < 4; j++) {
+                aNum[3 - j] = distInfo[j + i * 4];
+            }
+            result[i] = byteArrayToInt(aNum) / 100f;
+        }
+
+        log("Raw dists: " + Arrays.toString(result));
+        return result;
+    }
+
     private static float pos;
     private static float step = 0.3f;
 

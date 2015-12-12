@@ -303,47 +303,9 @@ public class Visualization extends ActionBarActivity {
                 target.build();
                 world.addObject(target);
 
-//                cube = Primitives.getCube(0.1f);
-//                cube.calcTextureWrap();
-//                cube.setTexture("grass ground");
-//                cube.strip();
-//                cube.build();
-//                world.addObject(cube);
-//                cube.translate(transfer(1.2f, 0f, 0.2f));
-////
-////
-//                Object3D cube2 = null;
-//                cube2 = Primitives.getCube(0.1f);
-//                cube2.calcTextureWrap();
-//                cube2.setTexture("grass ground");
-//                cube2.strip();
-//                cube2.build();
-//                world.addObject(cube2);
-//                cube2.translate(transfer(0f, 0f, 0.2f));
-
-
-                Object3D table1, table2;
-                table1 = Primitives.getPlane((int) (0.75 * 2 * app.getDisplayFactor()), 1f);
-                table1.calcTextureWrap();
-                table1.setTexture("table");
-                table1.strip();
-                table1.build();
-                table1.translate(transfer(0f, -0.45f, 0.8f));
-                table1.rotateX((float) Math.PI / 2f);
-                world.addObject(table1);
-
-                table2 = Primitives.getPlane((int) (0.75 * 2 * app.getDisplayFactor()), 1f);
-                table2.calcTextureWrap();
-                table2.setTexture("table");
-                table2.strip();
-                table2.build();
-                table2.translate(transfer(0f, 0.45f, 0.8f));
-                table2.rotateX((float) Math.PI / 2f);
-                world.addObject(table2);
-
-                ground = Primitives.getPlane((int) (3 * 2 * app.getDisplayFactor()), 1.06f);
+                ground = Primitives.getPlane((int) (3 * 2 * app.getDisplayFactor()), 1f);
                 ground.calcTextureWrap();
-                ground.setTexture("ground");
+                ground.setTexture("pic wall");
                 ground.strip();
                 ground.build();
                 ground.translate(0, 0, 0);
@@ -363,7 +325,7 @@ public class Visualization extends ActionBarActivity {
                 }
 
                 cam = world.getCamera();
-                cam.setPosition(transfer(0.2f, 0f, 8f));
+                cam.setPosition(transfer(0.2f, 0f, 4f));
                 cam.lookAt(target.getTransformedCenter());
 
                 controls = new TwoDConstrols(cam);
