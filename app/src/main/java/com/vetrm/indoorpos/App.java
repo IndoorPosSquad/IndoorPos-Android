@@ -17,13 +17,15 @@ public class App extends Application {
 
     static String pref_file_name = "pref";
 
-    private static float displayFactor = 2f;
+    private static float displayFactor = 1f;
 
     private static XYZ displayOffset = new XYZ(0f, 0f, 0f);
 
     private static float[] distOffset = new float[]{115.23f, 125.12f, 90.32f};
     // true = down, false = up
     private static boolean downup = true;
+
+    static XYZ defaultPos = new XYZ(-0.7f, 0f, 0.70f);
 
     public static XYZ getDisplayOffset() {
         return displayOffset;

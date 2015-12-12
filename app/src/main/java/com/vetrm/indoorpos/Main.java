@@ -5,22 +5,40 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
+import android.os.Handler;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
+import android.widget.ImageView;
+
+import java.lang.reflect.Array;
+import java.util.Arrays;
 
 
 public class Main extends ActionBarActivity {
     private App app;
+    private ImageView anchor1;
+    private ImageView anchor2;
+    private ImageView anchor3;
+
+
+    private float a1 = 0;
+    private int count1 = 0;
+    private float a2 = 0;
+    private int count2 = 0;
+    private float a3 = 0;
+    private int count3 = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        anchor1 = (ImageView) findViewById(R.id.imageView1);
+        anchor2 = (ImageView) findViewById(R.id.imageView2);
+        anchor3 = (ImageView) findViewById(R.id.imageView3);
 
         app = App.getInstance();
         getAndApplyPreference();
@@ -33,6 +51,19 @@ public class Main extends ActionBarActivity {
         } else {
             app.setDevman(new DeviceMan());
         }
+
+        final Handler handler = new Handler();
+        Runnable runnable = new Runnable(){
+            @Override
+            public void run() {
+                // TODO Auto-generated method stub
+                testAnchors();
+                Log.d("Handler:", "running testAnchors()");
+
+                handler.postDelayed(this, 230);// 50ms后执行this，即runable
+            }
+        };
+        handler.postDelayed(runnable, 2000);// 打开定时器，50ms后执行runnable操作
     }
 
 
@@ -66,8 +97,61 @@ public class Main extends ActionBarActivity {
         startActivity(intent);
     }
 
-    public void read(View view) {
-        app.getDevman().readDists();
+    public void testAnchors() {
+        float res[] = app.getDevman().readRawDists();
+        Log.d("Main: testAnchors;", Arrays.toString(res));
+
+        if (Math.abs(a1 - res[0]) <= 0.01f) { count1 += 1; } else { count1 = 0; }
+        if (Math.abs(a2 - res[1]) <= 0.01f) { count2 += 1; } else { count2 = 0; }
+        if (Math.abs(a3 - res[2]) <= 0.01f) { count3 += 1; } else { count3 = 0; }
+        a1 = res[0]; a2 = res[1]; a3 = res[2];
+
+        if (Math.abs(res[0]) > 200) {
+            anchor1.setImageResource(R.mipmap.yellow);
+        } else if (count1 >= 4) {
+            anchor1.setImageResource(R.mipmap.red);
+        } else {
+            anchor1.setImageResource(R.mipmap.green);
+        }
+
+        if (Math.abs(res[1]) > 200) {
+            anchor2.setImageResource(R.mipmap.yellow);
+        } else if (count2 >= 4) {
+            anchor2.setImageResource(R.mipmap.red);
+        } else {
+            anchor2.setImageResource(R.mipmap.green);
+        }
+
+        if (Math.abs(res[2]) > 200) {
+            anchor3.setImageResource(R.mipmap.yellow);
+        } else if (count3 >= 4) {
+            anchor3.setImageResource(R.mipmap.red);
+        } else {
+            anchor3.setImageResource(R.mipmap.green);
+        }
+    }
+
+    public void setOffset(View view) {
+        float raw[] = app.getDevman().readRawDists();
+
+        Log.d("Main, raw[]", Arrays.toString(raw));
+
+        float lens[] = new float[]{
+                Compute.len3d(app.defaultPos, app.getANCHOR_XYZ(1)),
+                Compute.len3d(app.defaultPos, app.getANCHOR_XYZ(2)),
+                Compute.len3d(app.defaultPos, app.getANCHOR_XYZ(3))
+        };
+
+        Log.d("Main, len[]", Arrays.toString(raw));
+
+        for (int i = 0; i < 3; i += 1) {
+            app.setDistOffset(i + 1, raw[i] - lens[i] - 0.10f);
+        }
+
+        SharedPreferences.Editor editor = getSharedPreferences(app.pref_file_name, 0).edit();
+        editor.putFloat("range1_offset", app.getDistOffset(1));
+        editor.putFloat("range2_offset", app.getDistOffset(2));
+        editor.putFloat("range3_offset", app.getDistOffset(3));
     }
 
     public void showSettings(View view) {
@@ -90,6 +174,4 @@ public class Main extends ActionBarActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
     }
-
-
 }

@@ -3,10 +3,12 @@ package com.vetrm.indoorpos;
 import android.opengl.GLSurfaceView;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.FloatMath;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.View;
 
 import com.threed.jpct.Camera;
 import com.threed.jpct.FrameBuffer;
@@ -46,8 +48,10 @@ public class Visualization extends ActionBarActivity {
     private float touchTurn = 0;
     private float touchTurnUp = 0;
 
+    private int mode = 0;
     private float xpos = -1;
     private float ypos = -1;
+    private float oldDist;
 
     private Object3D target = null;
     private Object3D cube = null;
@@ -59,7 +63,7 @@ public class Visualization extends ActionBarActivity {
     private Light sun = null;
 
     private Camera cam;
-    private OrbitControls controls;
+    private TwoDConstrols controls;
 
     private XYZ[] currentPos = new XYZ[]{
             new XYZ(0f, 4.8f, 3.000000f),
@@ -165,90 +169,69 @@ public class Visualization extends ActionBarActivity {
         Log.d("Visual", "" + obj);
     }
 
-    public boolean onTouchEvent(MotionEvent me) {
-//        switch (me.getAction() & MotionEvent.ACTION_MASK) {
-//            case MotionEvent.ACTION_DOWN:
-//                start.set(event.getX(), event.getY());
-//                Log.d(TAG, "mode=DRAG");
-//                mode = DRAG;
-//                break;
-//            case MotionEvent.ACTION_POINTER_DOWN:
-//                oldDist = spacing(event);
-//                Log.d(TAG, "oldDist=" + oldDist);
-//                if (oldDist > 10f) {
-//                    savedMatrix.set(matrix);
-//                    midPoint(mid, event);
-//                    mode = ZOOM;
-//                    Log.d(TAG, "mode=ZOOM");
-//                }
-//                break;
-//            case MotionEvent.ACTION_UP:
-//            case MotionEvent.ACTION_POINTER_UP:
-//                mode = NONE;
-//                Log.d(TAG, "mode=NONE");
-//                break;
-//            case MotionEvent.ACTION_MOVE:
-//                if (mode == DRAW){ onTouchEvent(event);}
-//                if (mode == DRAG) {
-//                    ///code for draging..
-//                }
-//                else if (mode == ZOOM) {
-//                    float newDist = spacing(event);
-//                    Log.d(TAG, "newDist=" + newDist);
-//                    if (newDist > 10f) {
-//                        matrix.set(savedMatrix);
-//                        float scale = newDist / oldDist;
-//                        matrix.getValues(matrixValues);
-//                        float currentScale = matrixValues[Matrix.MSCALE_X];
-//                        // limit zoom
-//                        if (scale * currentScale > maxZoom) {
-//                            scale = maxZoom / currentScale;
-//                        }else if(scale * currentScale < minZoom){
-//                            scale = minZoom / currentScale;
-//                        }
-//                        matrix.postScale(scale, scale, mid.x, mid.y);
-//                    }
-//                }
-//                break;
-//        }
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getAction() & MotionEvent.ACTION_MASK) {
+            case MotionEvent.ACTION_DOWN:
+                xpos = event.getX();
+                ypos = event.getY();
+                mode = 1;
+                break;
+            case MotionEvent.ACTION_UP:
+                xpos = -1;
+                ypos = -1;
+                touchTurn = 0;
+                touchTurnUp = 0;
+                mode = 0;
+                break;
+            case MotionEvent.ACTION_POINTER_UP:
+                mode -= 1;
+                break;
+            case MotionEvent.ACTION_POINTER_DOWN:
+                oldDist = spacing(event);
+                log("Old Dist:" + oldDist);
+                mode += 1;
+                break;
 
-        if (me.getAction() == MotionEvent.ACTION_DOWN) {
-            xpos = me.getX();
-            ypos = me.getY();
-            return true;
+            case MotionEvent.ACTION_MOVE:
+                if (mode >= 2) {
+                    float newDist = spacing(event);
+                    log("New Dist:" + newDist);
+                    if (newDist > oldDist + 1) {
+                        controls.moveZ(newDist / oldDist / 20);
+                        oldDist = newDist;
+                    }
+                    if (newDist < oldDist - 1) {
+                        controls.moveZ(- newDist / oldDist / 20);
+                        oldDist = newDist;
+                    }
+                } else {
+                    float xd = event.getX() - xpos;
+                    float yd = event.getY() - ypos;
+
+                    xpos = event.getX();
+                    ypos = event.getY();
+
+                    touchTurn = xd / -100f;
+                    touchTurnUp = yd / -100f;
+                }
+                break;
+            default:
+                try {
+                    Thread.sleep(15);
+                } catch (Exception e) {
+                    // No need for this...
+                }
+                return super.onTouchEvent(event);
         }
 
-        if (me.getAction() == MotionEvent.ACTION_UP) {
-            xpos = -1;
-            ypos = -1;
-            touchTurn = 0;
-            touchTurnUp = 0;
-            return true;
-        }
-
-        if (me.getAction() == MotionEvent.ACTION_MOVE) {
-            float xd = me.getX() - xpos;
-            float yd = me.getY() - ypos;
-
-            xpos = me.getX();
-            ypos = me.getY();
-
-            touchTurn = xd / -100f;
-            touchTurnUp = yd / -100f;
-            return true;
-        }
-
-//        if (me.getAction() == MotionEvent.)
-
-        try {
-            Thread.sleep(15);
-        } catch (Exception e) {
-            // No need for this...
-        }
-
-        return super.onTouchEvent(me);
+        return true;
     }
 
+    private float spacing(MotionEvent event) {
+        float x = event.getX(0) - event.getX(1);
+        float y = event.getY(0) - event.getY(1);
+        return FloatMath.sqrt(x * x + y * y);
+    }
 
     protected boolean isFullscreenOpaque() {
         return true;
@@ -309,7 +292,7 @@ public class Visualization extends ActionBarActivity {
                 Texture red_color = new Texture(BitmapHelper.rescale(BitmapHelper.convert(getResources().getDrawable(R.mipmap.red_color)), 1024, 1024));
                 TextureManager.getInstance().addTexture("red", red_color);
 
-                target = Primitives.getSphere(0.5f);
+                target = Primitives.getSphere(0.1f);
                 target.calcTextureWrap();
                 target.setTexture("grass ground");
                 target.strip();
@@ -586,19 +569,19 @@ public class Visualization extends ActionBarActivity {
                 world.addObject(square9);
 
                 ground = Primitives.getPlane((int) (6 * 2 * app.getDisplayFactor()), 1.06f);
+                // ground = Primitives.getPlane((int) (3 * 2 * app.getDisplayFactor()), 1f);
                 ground.calcTextureWrap();
-                ground.setTexture("ground");
+                ground.setTexture("pic wall");
                 ground.strip();
                 ground.build();
                 ground.translate(0, 0, 0);
                 ground.rotateX((float) Math.PI / 2f);
-                ground.rotateY((float) Math.PI / 4f);
                 world.addObject(ground);
 
                 currentPos = app.getANCHOR_XYZ();
 
                 for (int i = 0; i < currentPos.length; i++) {
-                    Object3D pl = Primitives.getDoubleCone(0.3f);
+                    Object3D pl = Primitives.getDoubleCone(0.05f);
                     anchors[i] = pl;
                     pl.calcTextureWrapSpherical();
                     pl.strip();
@@ -608,10 +591,10 @@ public class Visualization extends ActionBarActivity {
                 }
 
                 cam = world.getCamera();
-                cam.setPosition(transfer(6f, 6f, 5f));
+                cam.setPosition(transfer(0.2f, 0f, 4f));
                 cam.lookAt(target.getTransformedCenter());
 
-                controls = new OrbitControls(cam);
+                controls = new TwoDConstrols(cam);
 
                 sun.setPosition(new SimpleVector(transfer(100,100,100)));
                 MemoryHelper.compact();
@@ -631,12 +614,12 @@ public class Visualization extends ActionBarActivity {
             target.rotateX(0.01f);
 
             if (touchTurn != 0) {
-                controls.spinHorizontal(touchTurn / 10);
+                controls.moveX(touchTurn / 2);
                 touchTurn = 0;
             }
 
             if (touchTurnUp != 0) {
-                controls.spinVertical(-touchTurnUp / 10);
+                controls.moveY(-touchTurnUp / 2);
                 touchTurnUp = 0;
             }
 
@@ -701,6 +684,33 @@ if (touchTurn != 0) {
         touchTurnUp = 0;
         }
         */
+class TwoDConstrols {
+    private Camera camera;
+    public TwoDConstrols(Camera cam) {
+        camera = cam;
+    }
+
+    public void moveX(float scale) {
+        SimpleVector pos = new SimpleVector();
+        camera.getPosition(pos);
+        pos.x += scale;
+        camera.setPosition(pos);
+    }
+
+    public void moveY(float scale) {
+        SimpleVector pos = new SimpleVector();
+        camera.getPosition(pos);
+        pos.z += scale;
+        camera.setPosition(pos);
+    }
+
+    public void moveZ(float scale) {
+        SimpleVector pos = new SimpleVector();
+        camera.getPosition(pos);
+        pos.y += scale;
+        camera.setPosition(pos);
+    }
+}
 
 class OrbitControls {
     private Camera camera;
@@ -732,7 +742,7 @@ class OrbitControls {
 
         // don't spin vertically when exceed given tangent range, currently (0, 3)
         float tan = -position.y / (float) (Math.sqrt(Math.pow(position.x, 2) + Math.pow(position.z, 2)));
-        if (!((tan < 0 && deg < 0) || (tan > 3 && deg > 0))) {
+        if (!((tan < 0 && deg < 0) || (tan > 8 && deg > 0))) {
             position.rotateAxis(axis, deg);
             camera.setPosition(position);
             camera.lookAt(new SimpleVector(0f, 0f, 0f));
@@ -749,3 +759,5 @@ class OrbitControls {
         Log.d("OrbitControl", "" + obj);
     }
 }
+//        if (me.getAction() == MotionEvent.)
+//        if (me.getAction() == MotionEvent.)

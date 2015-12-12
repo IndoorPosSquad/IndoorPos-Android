@@ -76,6 +76,7 @@ public class Settings extends ActionBarActivity {
         // preference
 
         float[] ranges = devman.readDists();
+        if (ranges == null) {}
 
         log(Arrays.toString(ranges));
 

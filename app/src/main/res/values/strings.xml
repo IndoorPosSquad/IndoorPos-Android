@@ -3,6 +3,6 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">设置</string>
-    <string name="title_activity_visualization">3D</string>
+    <string name="title_activity_visualization">微环境定位与通信系统</string>
     <string name="title_activity_settings">设置</string>
 </resources>

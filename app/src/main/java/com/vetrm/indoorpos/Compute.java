@@ -13,13 +13,14 @@ public class Compute {
     static int step = 1;
     static int pos = 0;
 
+    static XYZ posBuf[] = new XYZ[]{new XYZ(), new XYZ(), new XYZ()};
+    static int pointer = 0;
+
     static float[][] pseudolites = new float[][] {
             {10.0f, 10.0f, 3.0f},
             {0.0f, 0.0f, 3.0f},
             {0.0f, 10.0f, 3.0f}
     };
-
-
 
     private static float sgn(float x) {
         if (x > 0) {
@@ -297,13 +298,43 @@ public class Compute {
         result.x = ans[0] + pl_xyz[0].x;
         result.y = ans[1] + pl_xyz[0].y;
         result.z = ans[2] + pl_xyz[0].z;
-        if (result.z <= 0) {result.z = 0;}
 
-        return result;
+        return posFilter(posConstrain(result));
     }
 
-    private static float len3d(XYZ p1, XYZ p2) {
+    static float len3d(XYZ p1, XYZ p2) {
         return (float)Math.sqrt(S(p1.x - p2.x) + S(p1.y - p2.y) + S(p1.z - p2.z));
+    }
+
+    public static XYZ posConstrain(XYZ pos) {
+        XYZ ans = pos;
+        if (ans.z <= 0.45) {
+            ans.z = 0.45f;
+        } else if (ans.z >= 0.80f) {
+            ans.z = 0.80f;
+        }
+        return ans;
+    }
+
+    public static XYZ filterBuffer[] = new XYZ[] {new XYZ(), new XYZ(), new XYZ()};
+
+    public static XYZ posFilter(XYZ newPos) {
+        filterBuffer[2] = filterBuffer[1];
+        filterBuffer[1] = filterBuffer[0];
+        filterBuffer[0] = newPos;
+
+        int count = 0;
+        XYZ accum = new XYZ();
+        for (int i = 0; i < 3; i++) {
+            if (filterBuffer[i].x != 0f && filterBuffer[i].y != 0f && filterBuffer[i].z != 0f) {
+                count += 1;
+                accum.x += filterBuffer[i].x;
+                accum.y += filterBuffer[i].y;
+                accum.z += filterBuffer[i].z;
+            }
+        }
+
+        return new XYZ(accum.x / count, accum.y / count, accum.z /count);
     }
 
     private static void log(Object obj) {
@@ -333,6 +364,22 @@ class XYZ {
         this.x = x;
         this.y = y;
         this.z = z;
+    }
+
+    public XYZ add(XYZ another) {
+        return new XYZ(x + another.x, y + another.y, z + another.z);
+    }
+
+    public XYZ sub(XYZ another) {
+        return new XYZ(x - another.x, y - another.y, z - another.z);
+    }
+
+    public XYZ scale(float factor) {
+        return new XYZ(x * factor, y * factor, z * factor);
+    }
+
+    public float len() {
+        return (float) Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2));
     }
 
     public XYZ(SimpleVector v) {
